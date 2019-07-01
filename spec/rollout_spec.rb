@@ -106,18 +106,39 @@ RSpec.describe "Rollout" do
   #
   # But I think actual client is more specific
   ##
+  shared_examples "User's Feature Checker" do
+    context 'when feature is rolled out for the user' do
+      subject { rollout(feature_name, user) }
+      it { is_expected.to be_active(feature_name, user) }
+    end
+
+    context 'when feature is NOT rolled out for the user' do
+      subject { rollout_except(feature_name, user) }
+      it { is_expected.not_to be_active(feature_name, user) }
+    end
+  end
+
   describe "activating a specific user" do
-    before do
-      @rollout.activate_user(:chat, double(id: 42))
+    let(:feature_name) { 'chat' }
+    let(:user) { double(id: 42) }
+
+    def rollout(feature_name, user)
+      Rollout.new(Redis.new).tap do |rollout|
+        rollout.activate_user('another_feature', user)
+        rollout.activate_user(feature_name, user)
+        rollout.activate_user(feature_name, double(id: 24))
+      end
     end
 
-    it "is active for that user" do
-      expect(@rollout).to be_active(:chat, double(id: 42))
+    def rollout_except(feature_name, user)
+      Rollout.new(Redis.new).tap do |rollout|
+        rollout.activate_user('another_feature', user)
+        rollout.activate_user('another_feature', double(id: 24))
+        rollout.activate_user(feature_name, double(id: 24))
+      end
     end
 
-    it "remains inactive for other users" do
-      expect(@rollout).not_to be_active(:chat, double(id: 24))
-    end
+    it_behaves_like "User's Feature Checker"
   end
 
   describe "activating a specific user by ID" do
