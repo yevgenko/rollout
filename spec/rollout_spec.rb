@@ -108,33 +108,36 @@ RSpec.describe "Rollout" do
   ##
   shared_examples "User's Feature Checker" do
     context 'when feature is rolled out for the user' do
-      subject { rollout(feature_name, user) }
-      it { is_expected.to be_active(feature_name, user) }
+      subject { rollout(feature, user) }
+      it { is_expected.to be_active(feature, user) }
     end
 
     context 'when feature is NOT rolled out for the user' do
-      subject { rollout_except(feature_name, user) }
-      it { is_expected.not_to be_active(feature_name, user) }
+      subject { rollout_except(feature, user) }
+      it { is_expected.not_to be_active(feature, user) }
     end
   end
 
   describe "activating a specific user" do
-    let(:feature_name) { 'chat' }
-    let(:user) { double(id: 42) }
+    let(:feature) { 'chat' }
+    let(:another_feature) { 'another_feature' }
 
-    def rollout(feature_name, user)
+    let(:user) { double(id: 42) }
+    let(:another_user) { double(id: 24) }
+
+    def rollout(feature, user)
       Rollout.new(Redis.new).tap do |rollout|
-        rollout.activate_user('another_feature', user)
-        rollout.activate_user(feature_name, user)
-        rollout.activate_user(feature_name, double(id: 24))
+        rollout.activate_user(another_feature, user)
+        rollout.activate_user(feature, user)
+        rollout.activate_user(feature, another_user)
       end
     end
 
-    def rollout_except(feature_name, user)
+    def rollout_except(feature, user)
       Rollout.new(Redis.new).tap do |rollout|
-        rollout.activate_user('another_feature', user)
-        rollout.activate_user('another_feature', double(id: 24))
-        rollout.activate_user(feature_name, double(id: 24))
+        rollout.activate_user(another_feature, user)
+        rollout.activate_user(another_feature, another_user)
+        rollout.activate_user(feature, another_user)
       end
     end
 
