@@ -114,11 +114,11 @@ RSpec.describe "Rollout" do
 
     context 'when feature is NOT rolled out for the user' do
       subject { rollout_except(feature, user) }
-      it { is_expected.not_to be_active(feature, user) }
+      it { is_expected.to be_active(feature, user) }
     end
   end
 
-  describe "activating a specific user" do
+  describe "feature as a String and user as an anything with ID attribute" do
     let(:feature) { 'chat' }
     let(:another_feature) { 'another_feature' }
 
