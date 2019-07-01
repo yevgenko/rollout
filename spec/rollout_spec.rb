@@ -89,6 +89,23 @@ RSpec.describe "Rollout" do
     end
   end
 
+  ##
+  # CONTRACT: assess feature status for the user
+  #
+  # assumming client uses it like this rollout.active?('feature_name', user)
+  #
+  # accepts feature name and some kind of identifiable object
+  #
+  # returns boolean: true or false
+  # * true when feature is active for the user
+  # * false when feature isn't active for the user
+  #
+  # According to current implementation
+  #   feature name can be a string or symbol
+  #   user can be object with ID attribute, number or string identifier
+  #
+  # But I think actual client is more specific
+  ##
   describe "activating a specific user" do
     before do
       @rollout.activate_user(:chat, double(id: 42))
