@@ -114,7 +114,7 @@ RSpec.describe "Rollout" do
 
     context 'when feature is NOT rolled out for the user' do
       subject { rollout_except(feature, user) }
-      it { is_expected.to be_active(feature, user) }
+      it { is_expected.not_to be_active(feature, user) }
     end
   end
 
