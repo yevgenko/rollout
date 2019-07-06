@@ -101,20 +101,14 @@ RSpec.describe "Rollout" do
   # * false when feature isn't active for the user
   ##
   shared_examples "User's Feature Checker" do
-    let(:feature) { 'chat' }
-    let(:another_feature) { 'another_feature' }
-
-    let(:user) { double(id: 42) }
-    let(:another_user) { double(id: 24) }
-
     context 'when feature is rolled out for the user' do
-      subject { rollout(feature, user) }
-      it { is_expected.to be_active(feature, user) }
+      subject { rollout('feature_name', double(id: 42)) }
+      it { is_expected.to be_active('feature_name', double(id: 42)) }
     end
 
     context 'when feature is NOT rolled out for the user' do
-      subject { rollout_except(feature, user) }
-      it { is_expected.not_to be_active(feature, user) }
+      subject { rollout_except('feature_name', double(id: 42)) }
+      it { is_expected.not_to be_active('feature_name', double(id: 42)) }
     end
   end
 
