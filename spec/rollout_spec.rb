@@ -89,17 +89,54 @@ RSpec.describe "Rollout" do
     end
   end
 
-  describe "activating a specific user" do
-    before do
-      @rollout.activate_user(:chat, double(id: 42))
+  ##
+  # CONTRACT: assess feature status for the user
+  #
+  # assumming client uses it like this rollout.active?('feature_name', user)
+  #
+  # accepts feature name as a string and a user (an object with id attribute)
+  #
+  # returns boolean: true or false
+  # * true when feature is active for the user
+  # * false when feature isn't active for the user
+  ##
+  shared_examples "User's Feature Checker" do
+    def rollout(feature_name, user)
+      raise 'Subclass Responsibility'
     end
 
-    it "is active for that user" do
-      expect(@rollout).to be_active(:chat, double(id: 42))
+    def rollout_except(feature_name, user)
+      raise 'Subclass Responsibility'
     end
 
-    it "remains inactive for other users" do
-      expect(@rollout).not_to be_active(:chat, double(id: 24))
+    context 'when feature is rolled out for the user' do
+      subject { rollout('feature_name', double(id: 42)) }
+      it { is_expected.to be_active('feature_name', double(id: 42)) }
+    end
+
+    context 'when feature is NOT rolled out for the user' do
+      subject { rollout_except('feature_name', double(id: 42)) }
+      it { is_expected.not_to be_active('feature_name', double(id: 42)) }
+    end
+  end
+
+  describe "feature as a String and user as an anything with ID attribute" do
+    it_behaves_like "User's Feature Checker" do
+      def rollout(feature_name, user)
+        Rollout.new(Redis.new).tap do |rollout|
+          rollout.activate_user("not_the_#{feature_name}", user)
+          rollout.activate_user(feature_name, user)
+          rollout.activate_user(feature_name, double(id: user.id + 100))
+        end
+      end
+
+      def rollout_except(feature_name, user)
+        Rollout.new(Redis.new).tap do |rollout|
+          rollout.activate_user("not_the_#{feature_name}", user)
+          rollout.activate_user("not_the_#{feature_name}", double(id: user.id + 100))
+          rollout.activate_user(feature_name, double(id: user.id + 100))
+        end
+      end
     end
   end
 
