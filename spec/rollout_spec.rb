@@ -124,17 +124,17 @@ RSpec.describe "Rollout" do
     it_behaves_like "User's Feature Checker" do
       def rollout(feature_name, user)
         Rollout.new(Redis.new).tap do |rollout|
-          rollout.activate_user('another_feature', user)
+          rollout.activate_user("not_the_#{feature_name}", user)
           rollout.activate_user(feature_name, user)
-          rollout.activate_user(feature_name, double(id: 24))
+          rollout.activate_user(feature_name, double(id: user.id + 100))
         end
       end
 
       def rollout_except(feature_name, user)
         Rollout.new(Redis.new).tap do |rollout|
-          rollout.activate_user('another_feature', user)
-          rollout.activate_user('another_feature', double(id: 24))
-          rollout.activate_user(feature_name, double(id: 24))
+          rollout.activate_user("not_the_#{feature_name}", user)
+          rollout.activate_user("not_the_#{feature_name}", double(id: user.id + 100))
+          rollout.activate_user(feature_name, double(id: user.id + 100))
         end
       end
     end
