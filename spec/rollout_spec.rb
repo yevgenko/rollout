@@ -94,17 +94,11 @@ RSpec.describe "Rollout" do
   #
   # assumming client uses it like this rollout.active?('feature_name', user)
   #
-  # accepts feature name and some kind of identifiable object
+  # accepts feature name as a string and a user (an object with id attribute)
   #
   # returns boolean: true or false
   # * true when feature is active for the user
   # * false when feature isn't active for the user
-  #
-  # According to current implementation
-  #   feature name can be a string or symbol
-  #   user can be object with ID attribute, number or string identifier
-  #
-  # But I think actual client is more specific
   ##
   shared_examples "User's Feature Checker" do
     context 'when feature is rolled out for the user' do
