@@ -101,6 +101,14 @@ RSpec.describe "Rollout" do
   # * false when feature isn't active for the user
   ##
   shared_examples "User's Feature Checker" do
+    def rollout(feature, user)
+      raise 'Subclass Responsibility'
+    end
+
+    def rollout_except(feature, user)
+      raise 'Subclass Responsibility'
+    end
+
     context 'when feature is rolled out for the user' do
       subject { rollout('feature_name', double(id: 42)) }
       it { is_expected.to be_active('feature_name', double(id: 42)) }
@@ -113,23 +121,23 @@ RSpec.describe "Rollout" do
   end
 
   describe "feature as a String and user as an anything with ID attribute" do
-    def rollout(feature, user)
-      Rollout.new(Redis.new).tap do |rollout|
-        rollout.activate_user('another_feature', user)
-        rollout.activate_user(feature, user)
-        rollout.activate_user(feature, double(id: 24))
+    it_behaves_like "User's Feature Checker" do
+      def rollout(feature, user)
+        Rollout.new(Redis.new).tap do |rollout|
+          rollout.activate_user('another_feature', user)
+          rollout.activate_user(feature, user)
+          rollout.activate_user(feature, double(id: 24))
+        end
+      end
+
+      def rollout_except(feature, user)
+        Rollout.new(Redis.new).tap do |rollout|
+          rollout.activate_user('another_feature', user)
+          rollout.activate_user('another_feature', double(id: 24))
+          rollout.activate_user(feature, double(id: 24))
+        end
       end
     end
-
-    def rollout_except(feature, user)
-      Rollout.new(Redis.new).tap do |rollout|
-        rollout.activate_user('another_feature', user)
-        rollout.activate_user('another_feature', double(id: 24))
-        rollout.activate_user(feature, double(id: 24))
-      end
-    end
-
-    it_behaves_like "User's Feature Checker"
   end
 
   describe "activating a specific user by ID" do
